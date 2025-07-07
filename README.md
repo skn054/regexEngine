@@ -9,14 +9,7 @@ This project serves as a learning exercise to understand the fundamentals of non
 - [Introduction](#introduction)
 - [Features](#features)
 - [How It Works](#how-it-works)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Compilation](#compilation)
-  - [Usage](#usage)
-- [Development and Design](#development-and-design)
-- [Future Work](#future-work)
-- [Acknowledgments](#acknowledgments)
+
 
 ## Introduction
 
