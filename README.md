@@ -46,4 +46,3 @@ The engine operates in two main phases:
     - This is a single-pass algorithm; the input string is read only once from left to right.
     - If the final list of states contains the designated "match" state after the entire string is consumed, the string is considered a match.
 
-## Project Structure
