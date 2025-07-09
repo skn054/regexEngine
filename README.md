@@ -1,5 +1,7 @@
 # Simple Regex Engine
 
+Project under development phase. 
+
 A C implementation of a simple and efficient regular expression engine based on Ken Thompson's construction algorithm, as detailed in Russ Cox's article series, "[Regular Expression Matching Can Be Simple And Fast](https://swtch.com/~rsc/regexp/regexp1.html)".
 
 This project serves as a learning exercise to understand the fundamentals of non-backtracking NFA-based regex matching, which guarantees linear-time performance and avoids the catastrophic backtracking pitfalls common in many modern regex libraries.
