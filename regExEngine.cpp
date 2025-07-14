@@ -9,6 +9,51 @@ struct state
     struct state *out1;
 };
 
+struct ptrlist{
+    struct state **out;
+    struct ptrlist *next;
+};
+
+struct Frag{
+
+    struct state* st;
+    struct ptrlist *list;
+};
+
+struct Frag* createStateAndFragmentForSymbol(char symbol){
+    // create a state
+    struct state *stt = (struct state*)malloc(sizeof(struct state));
+    stt->c = (int)symbol;
+    stt->out =NULL;
+    stt->out1 = NULL;
+    // create a fragment
+
+    
+
+    struct ptrlist *list = (struct ptrlist*) malloc(sizeof(struct ptrlist));
+    list->out = &stt->out;
+    list->next = NULL;
+
+    struct Frag *frag = (struct Frag*)malloc(sizeof(struct Frag));
+    frag->st =stt;
+    frag->list = list;
+
+    // return fragment
+    return frag;
+}
+void createStateFromExpression(string postFixExpression){
+
+    stack<Frag*> fragments;
+    int postFixStrLen = postFixExpression.length();
+    for(int i=0;i<postFixStrLen;i++){
+        if(isalnum(postFixExpression[i])){
+            struct Frag *fragment = createStateAndFragmentForSymbol(postFixExpression[i]);
+            fragments.push(fragment);
+        }
+    }
+}
+
+
 int getPrecedence(char ch)
 {
     switch (ch)
@@ -66,13 +111,13 @@ string getModifiedInputString(string expression)
     }
     return resultExpression;
 }
-void infixtoPstfix(string expr)
+string infixtoPstfix(string expr)
 {
     stack<char> s;
     string modifiedExpression = getModifiedInputString(expr);
     int strLength = modifiedExpression.length();
     if (strLength <= 1 && isalnum(modifiedExpression[0]))
-        return;
+        return "";
     string result;
     for (int i = 0; i < strLength; i++)
     {
@@ -118,7 +163,8 @@ void infixtoPstfix(string expr)
         result.push_back(ch);
         s.pop();
     }
-    cout << result << endl;
+    // cout << result << endl;
+    return result;
 }
 
 int main()
@@ -129,9 +175,15 @@ int main()
     string s3 = "ab|c";
 
     // cout << getModifiedInputString("a.b|c");
-    infixtoPstfix(s);
-    infixtoPstfix(s1);
-    infixtoPstfix(s2);
-    infixtoPstfix(s3);
+    // infixtoPstfix(s);
+    // infixtoPstfix(s1);
+    // infixtoPstfix(s2);
+    // infixtoPstfix(s3);
+    string postFixExpression = infixtoPstfix(s);
+    if(postFixExpression.length() >1){
+        cout << postFixExpression;
+
+    }
+    
     return 0;
 }
