@@ -2,52 +2,65 @@
 #include <stack>
 using namespace std;
 
-struct state
+struct State
 {
     int c;
-    struct state *out;
-    struct state *out1;
+    struct State *out;
+    struct State *out1;
 };
 
-struct ptrlist{
-    struct state **out;
-    struct ptrlist *next;
+struct Ptrlist{
+    struct State **outp;
+    struct Ptrlist *next;
 };
 
 struct Frag{
 
-    struct state* st;
-    struct ptrlist *list;
+    struct State* start;
+    struct Ptrlist *out; //outging dangling pointers
 };
 
-struct Frag* createStateAndFragmentForSymbol(char symbol){
-    // create a state
-    struct state *stt = (struct state*)malloc(sizeof(struct state));
-    stt->c = (int)symbol;
-    stt->out =NULL;
-    stt->out1 = NULL;
-    // create a fragment
-
-    
-
-    struct ptrlist *list = (struct ptrlist*) malloc(sizeof(struct ptrlist));
-    list->out = &stt->out;
-    list->next = NULL;
-
-    struct Frag *frag = (struct Frag*)malloc(sizeof(struct Frag));
-    frag->st =stt;
-    frag->list = list;
-
-    // return fragment
-    return frag;
+State* state(int c,State *out,State *out1){
+    State* s = (State *)malloc(sizeof(State));
+    s->c = c;
+    s->out = out;
+    s->out1 = out1;
+    return s;
 }
-void createStateFromExpression(string postFixExpression){
 
-    stack<Frag*> fragments;
-    int postFixStrLen = postFixExpression.length();
-    for(int i=0;i<postFixStrLen;i++){
-        if(isalnum(postFixExpression[i])){
-            struct Frag *fragment = createStateAndFragmentForSymbol(postFixExpression[i]);
+Ptrlist* list(State **outp){
+    Ptrlist *list = (Ptrlist *)malloc(sizeof(Ptrlist));
+    list->outp = outp;
+    list->next = NULL;
+    return list;
+}
+
+Frag frag(State *start,Ptrlist *out){
+    Frag f;
+    f.start = start;
+    f.out = out;
+    return f;
+}
+
+
+void postToNFA(string postFixExpression){
+
+    stack<Frag> fragments;
+    for(char p: postFixExpression){
+        switch (p)
+        {
+        case '*':
+            /* code */
+            break;
+        case '+':
+            break;
+        case '|':
+            break;
+        case '.':
+            break;
+        default: //literal character
+            State *s = state(p,NULL,NULL);
+            Frag fragment = frag(s,list(&s->out));
             fragments.push(fragment);
         }
     }
