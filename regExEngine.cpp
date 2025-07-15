@@ -43,6 +43,21 @@ Frag frag(State *start,Ptrlist *out){
 }
 
 
+
+void patch(Ptrlist *list1,State *state){
+    
+    while(list1!=NULL){
+        *(list1->outp) = state;
+        list1 = list1->next;
+    }
+}
+
+Ptrlist* append(Ptrlist *list1,Ptrlist *list2){
+    list1->next = list2;
+    return list1;
+}
+
+
 void postToNFA(string postFixExpression){
 
     stack<Frag> fragments;
@@ -55,8 +70,22 @@ void postToNFA(string postFixExpression){
         case '+':
             break;
         case '|':
+            Frag second = fragments.top();
+            fragments.pop();
+            Frag first = fragments.top();
+            fragments.pop();
+            State *newState = state(256,first.start,second.start);
+            fragments.push(frag(newState,append(first.out,second.out)));
+            break;
+        case '?':
             break;
         case '.':
+            Frag second = fragments.top();
+            fragments.pop();
+            Frag first = fragments.top();
+            fragments.pop();
+            patch(first.out,second.start);
+            fragments.push(frag(first.start,second.out));
             break;
         default: //literal character
             State *s = state(p,NULL,NULL);
