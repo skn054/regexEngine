@@ -53,8 +53,13 @@ void patch(Ptrlist *list1,State *state){
 }
 
 Ptrlist* append(Ptrlist *list1,Ptrlist *list2){
+    if(list1 == NULL) return list2;
+    Ptrlist *newList = list1;
+    while(list1!=NULL){
+        list1 = list1->next;
+    }
     list1->next = list2;
-    return list1;
+    return newList;
 }
 
 
@@ -66,8 +71,18 @@ void postToNFA(string postFixExpression){
         {
         case '*':
             /* code */
+            Frag first = fragments.top();
+            fragments.pop();
+            State *newState = state(256,first.start,NULL);
+            patch(first.out,newState);
+            fragments.push(frag(newState,list(&newState->out1)));
             break;
         case '+':
+            Frag first = fragments.top();
+            fragments.pop();
+            State *newState = state(256,first.start,NULL);
+            patch(first.out,newState);
+            fragments.push(frag(first.start,list(&newState->out1)));
             break;
         case '|':
             Frag second = fragments.top();
@@ -78,6 +93,10 @@ void postToNFA(string postFixExpression){
             fragments.push(frag(newState,append(first.out,second.out)));
             break;
         case '?':
+            Frag first = fragments.top();
+            fragments.pop();
+            State *newState = state(256,first.start,NULL);
+            fragments.push(frag(newState,append(first.out,NULL)));
             break;
         case '.':
             Frag second = fragments.top();
