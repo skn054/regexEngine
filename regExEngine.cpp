@@ -2,118 +2,203 @@
 #include <stack>
 using namespace std;
 
+int listid =0;
 struct State
 {
     int c;
     struct State *out;
     struct State *out1;
+    int lastlist;
 };
 
-struct Ptrlist{
+struct Ptrlist
+{
     struct State **outp;
     struct Ptrlist *next;
 };
 
-struct Frag{
+struct Frag
+{
 
-    struct State* start;
-    struct Ptrlist *out; //outging dangling pointers
+    struct State *start;
+    struct Ptrlist *out; // outging dangling pointers
 };
 
-State* state(int c,State *out,State *out1){
-    State* s = (State *)malloc(sizeof(State));
+struct List
+{
+
+    struct State **s;
+    int n; // keeptrack of no of states in list.
+};
+
+
+struct List l1;
+struct List l2;
+int match(State *start,char *s){
+      
+    List *clist,*nlist,*t;
+    clist = startList(start,&l1);
+    nlist = &l2;
+    for(;*s;s++){
+        step(clist,*s,nlist);
+        t = clist;
+        clist = nlist;
+        nlist = t;
+    }
+    return ismatch(clist);
+}
+
+int ismatch(List *nlist){
+    for(int i=0;i<nlist->n;i++){
+        if(nlist->s[i]->c == 257){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void step(List *clist,int c,List *nlist){
+    int i;
+    listid++;
+    nlist->n = 0;
+    for(i=0;i<clist->n;i++){
+        if(clist->s[i]->c == c){
+            addState(nlist,clist->s[i]->out);
+        }
+    }
+}
+
+// ad start state to list
+void addState(List *l1, State *s)
+{
+    if(s == NULL || s->lastlist == listid){
+        return;
+    }
+    if (s->c == 256)
+    {
+        addState(l1,s->out);
+        addState(l1,s->out1);
+    }
+
+    // add start state to list
+    l1->s[l1->n++] = s;
+}
+List* startList(State *start, List *l1)
+{
+
+    listid++;
+    l1->n = 0;
+    addState(l1, start);
+    return l1;
+}
+
+State *state(int c, State *out, State *out1)
+{
+    State *s = (State *)malloc(sizeof(State));
     s->c = c;
     s->out = out;
     s->out1 = out1;
+    s->lastlist = 0;
     return s;
 }
 
-Ptrlist* list(State **outp){
+Ptrlist *list(State **outp)
+{
     Ptrlist *list = (Ptrlist *)malloc(sizeof(Ptrlist));
     list->outp = outp;
     list->next = NULL;
     return list;
 }
 
-Frag frag(State *start,Ptrlist *out){
+Frag frag(State *start, Ptrlist *out)
+{
     Frag f;
     f.start = start;
     f.out = out;
     return f;
 }
 
+void patch(Ptrlist *list1, State *state)
+{
 
-
-void patch(Ptrlist *list1,State *state){
-    
-    while(list1!=NULL){
+    while (list1 != NULL)
+    {
         *(list1->outp) = state;
         list1 = list1->next;
     }
 }
 
-Ptrlist* append(Ptrlist *list1,Ptrlist *list2){
-    if(list1 == NULL) return list2;
+Ptrlist *append(Ptrlist *list1, Ptrlist *list2)
+{
+    if (list1 == NULL)
+        return list2;
     Ptrlist *newList = list1;
-    while(list1!=NULL){
+    while (list1 != NULL)
+    {
         list1 = list1->next;
     }
     list1->next = list2;
     return newList;
 }
 
-
-void postToNFA(string postFixExpression){
+State *postToNFA(string postFixExpression)
+{
 
     stack<Frag> fragments;
-    for(char p: postFixExpression){
+    State *matchstate = state(257, NULL, NULL);
+    for (char p : postFixExpression)
+    {
         switch (p)
         {
         case '*':
             /* code */
             Frag first = fragments.top();
             fragments.pop();
-            State *newState = state(256,first.start,NULL);
-            patch(first.out,newState);
-            fragments.push(frag(newState,list(&newState->out1)));
+            State *newState = state(256, first.start, NULL);
+            patch(first.out, newState);
+            fragments.push(frag(newState, list(&newState->out1)));
             break;
         case '+':
             Frag first = fragments.top();
             fragments.pop();
-            State *newState = state(256,first.start,NULL);
-            patch(first.out,newState);
-            fragments.push(frag(first.start,list(&newState->out1)));
+            State *newState = state(256, first.start, NULL);
+            patch(first.out, newState);
+            fragments.push(frag(first.start, list(&newState->out1)));
             break;
         case '|':
             Frag second = fragments.top();
             fragments.pop();
             Frag first = fragments.top();
             fragments.pop();
-            State *newState = state(256,first.start,second.start);
-            fragments.push(frag(newState,append(first.out,second.out)));
+            State *newState = state(256, first.start, second.start);
+            fragments.push(frag(newState, append(first.out, second.out)));
             break;
         case '?':
             Frag first = fragments.top();
             fragments.pop();
-            State *newState = state(256,first.start,NULL);
-            fragments.push(frag(newState,append(first.out,NULL)));
+            State *newState = state(256, first.start, NULL);
+            fragments.push(frag(newState, append(first.out, NULL)));
             break;
         case '.':
             Frag second = fragments.top();
             fragments.pop();
             Frag first = fragments.top();
             fragments.pop();
-            patch(first.out,second.start);
-            fragments.push(frag(first.start,second.out));
+            patch(first.out, second.start);
+            fragments.push(frag(first.start, second.out));
             break;
-        default: //literal character
-            State *s = state(p,NULL,NULL);
-            Frag fragment = frag(s,list(&s->out));
+        default: // literal character
+            State *s = state(p, NULL, NULL);
+            Frag fragment = frag(s, list(&s->out));
             fragments.push(fragment);
         }
     }
-}
 
+    Frag start = fragments.top();
+    fragments.pop();
+    patch(start.out, matchstate);
+    return start.start;
+}
 
 int getPrecedence(char ch)
 {
@@ -241,10 +326,10 @@ int main()
     // infixtoPstfix(s2);
     // infixtoPstfix(s3);
     string postFixExpression = infixtoPstfix(s);
-    if(postFixExpression.length() >1){
+    if (postFixExpression.length() > 1)
+    {
         cout << postFixExpression;
-
     }
-    
+
     return 0;
 }
