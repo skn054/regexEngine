@@ -325,11 +325,17 @@ int main()
     // infixtoPstfix(s1);
     // infixtoPstfix(s2);
     // infixtoPstfix(s3);
-    string postFixExpression = infixtoPstfix(s);
-    if (postFixExpression.length() > 1)
-    {
-        cout << postFixExpression;
-    }
+    // string postFixExpression = infixtoPstfix(s);
+    // if (postFixExpression.length() > 1)
+    // {
+    //     cout << postFixExpression;
+    // }
+    //test
+    string postfix =  infixtoPstfix("a.b|c");
+    State * start = postToNFA(postfix);
+    cout << match(start,"ac");
+    cout << match(start,"bc");
+    cout << match(start,"abc");
 
     return 0;
 }
