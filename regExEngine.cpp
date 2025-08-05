@@ -34,6 +34,55 @@ struct List
 
 struct List l1;
 struct List l2;
+
+
+void addState(List *l1, State *s)
+{
+    if(s == NULL || s->lastlist == listid){ // check if state is already in the list.
+        return;
+    }
+
+    s->lastlist = listid;
+    if (s->c == 256)
+    {
+        addState(l1,s->out);
+        addState(l1,s->out1);
+    }
+
+    // add start state to list
+    l1->s[l1->n++] = s;
+}
+
+List* startList(State *start, List *l1)
+{
+
+    listid++;
+    l1->n = 0;
+    addState(l1, start);
+    return l1;
+}
+
+void step(List *clist,int c,List *nlist){
+    int i;
+    listid++;
+    nlist->n = 0;
+    for(i=0;i<clist->n;i++){
+        if(clist->s[i]->c == c){
+            addState(nlist,clist->s[i]->out);
+        }
+    }
+}
+
+
+int ismatch(List *nlist){
+    for(int i=0;i<nlist->n;i++){
+        if(nlist->s[i]->c == 257){
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int match(State *start,char *s){
       
     List *clist,*nlist,*t;
@@ -48,49 +97,12 @@ int match(State *start,char *s){
     return ismatch(clist);
 }
 
-int ismatch(List *nlist){
-    for(int i=0;i<nlist->n;i++){
-        if(nlist->s[i]->c == 257){
-            return 1;
-        }
-    }
-    return 0;
-}
 
-void step(List *clist,int c,List *nlist){
-    int i;
-    listid++;
-    nlist->n = 0;
-    for(i=0;i<clist->n;i++){
-        if(clist->s[i]->c == c){
-            addState(nlist,clist->s[i]->out);
-        }
-    }
-}
+
 
 // ad start state to list
-void addState(List *l1, State *s)
-{
-    if(s == NULL || s->lastlist == listid){ // check if state is already in the list.
-        return;
-    }
-    if (s->c == 256)
-    {
-        addState(l1,s->out);
-        addState(l1,s->out1);
-    }
 
-    // add start state to list
-    l1->s[l1->n++] = s;
-}
-List* startList(State *start, List *l1)
-{
 
-    listid++;
-    l1->n = 0;
-    addState(l1, start);
-    return l1;
-}
 
 State *state(int c, State *out, State *out1)
 {
@@ -133,7 +145,7 @@ Ptrlist *append(Ptrlist *list1, Ptrlist *list2)
     if (list1 == NULL)
         return list2;
     Ptrlist *newList = list1;
-    while (list1 != NULL)
+    while (list1->next != NULL)
     {
         list1 = list1->next;
     }
@@ -150,22 +162,26 @@ State *postToNFA(string postFixExpression)
     {
         switch (p)
         {
-        case '*':
-            /* code */
+        case '*':{
             Frag first = fragments.top();
             fragments.pop();
             State *newState = state(256, first.start, NULL);
             patch(first.out, newState);
             fragments.push(frag(newState, list(&newState->out1)));
             break;
-        case '+':
-            Frag first = fragments.top();
+        }
+            /* code */
+            
+        case '+':{
+             Frag first = fragments.top();
             fragments.pop();
             State *newState = state(256, first.start, NULL);
             patch(first.out, newState);
             fragments.push(frag(first.start, list(&newState->out1)));
             break;
-        case '|':
+        }
+           
+        case '|':{
             Frag second = fragments.top();
             fragments.pop();
             Frag first = fragments.top();
@@ -173,24 +189,32 @@ State *postToNFA(string postFixExpression)
             State *newState = state(256, first.start, second.start);
             fragments.push(frag(newState, append(first.out, second.out)));
             break;
-        case '?':
-            Frag first = fragments.top();
+        }
+            
+        case '?':{
+             Frag first = fragments.top();
             fragments.pop();
             State *newState = state(256, first.start, NULL);
-            fragments.push(frag(newState, append(first.out, NULL)));
+            fragments.push(frag(newState, append(first.out, list(&newState->out1))));
             break;
-        case '.':
-            Frag second = fragments.top();
+        }
+           
+        case '.':{
+             Frag second = fragments.top();
             fragments.pop();
             Frag first = fragments.top();
             fragments.pop();
             patch(first.out, second.start);
             fragments.push(frag(first.start, second.out));
             break;
-        default: // literal character
+        }
+           
+        default:{
             State *s = state(p, NULL, NULL);
             Frag fragment = frag(s, list(&s->out));
             fragments.push(fragment);
+        } // literal character
+            
         }
     }
 
@@ -313,6 +337,21 @@ string infixtoPstfix(string expr)
     return result;
 }
 
+void run_test(const string& infix_regex, const string& test_str, int expected) {
+    string postfix = infixtoPstfix(infix_regex);
+    State* start = postToNFA(postfix);
+    int result = match(start, (char*)test_str.c_str());
+
+    cout << "Regex: '" << infix_regex << "', String: '" << test_str << "'";
+    cout << " -> Got: " << result << ", Expected: " << expected;
+    if (result == expected) {
+        cout << " [PASS]" << endl;
+    } else {
+        cout << " [FAIL]" << endl;
+    }
+    // Remember to free the NFA if you implement a free_nfa function
+}
+
 int main()
 {
     string s = "a|bc";
@@ -331,11 +370,23 @@ int main()
     //     cout << postFixExpression;
     // }
     //test
-    string postfix =  infixtoPstfix("a.b|c");
-    State * start = postToNFA(postfix);
-    cout << match(start,"ac");
-    cout << match(start,"bc");
-    cout << match(start,"abc");
+    State *list_s1[1000];
+    State *list_s2[1000];
+    l1.s = list_s1;
+    l2.s = list_s2;
+    // string postfix =  infixtoPstfix("a.b|c");
+    // State * start = postToNFA(postfix);
+    // cout << match(start,(char *)"ac");
+    // cout << match(start,(char *)"bc");
+    // cout << match(start,(char *)"abc");
+
+     run_test("ab|c", "ab", 1);
+      run_test("ab|c", "c", 1);
+    run_test("ab|c", "ac", 0);
+    
+    run_test("a(b|c)*d", "ad", 1);
+    run_test("a(b|c)*d", "acbd", 1);
+    run_test("a(b|c)*d", "axd", 0);
 
     return 0;
 }
