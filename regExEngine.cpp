@@ -71,7 +71,7 @@ void step(List *clist,int c,List *nlist){
 // ad start state to list
 void addState(List *l1, State *s)
 {
-    if(s == NULL || s->lastlist == listid){
+    if(s == NULL || s->lastlist == listid){ // check if state is already in the list.
         return;
     }
     if (s->c == 256)
