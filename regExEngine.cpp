@@ -359,34 +359,25 @@ int main()
     string s2 = "a(b|c)*d"; // Should be abc|*.d.
     string s3 = "ab|c";
 
-    // cout << getModifiedInputString("a.b|c");
-    // infixtoPstfix(s);
-    // infixtoPstfix(s1);
-    // infixtoPstfix(s2);
-    // infixtoPstfix(s3);
-    // string postFixExpression = infixtoPstfix(s);
-    // if (postFixExpression.length() > 1)
-    // {
-    //     cout << postFixExpression;
-    // }
-    //test
     State *list_s1[1000];
     State *list_s2[1000];
     l1.s = list_s1;
     l2.s = list_s2;
-    // string postfix =  infixtoPstfix("a.b|c");
-    // State * start = postToNFA(postfix);
-    // cout << match(start,(char *)"ac");
-    // cout << match(start,(char *)"bc");
-    // cout << match(start,(char *)"abc");
-
-     run_test("ab|c", "ab", 1);
-      run_test("ab|c", "c", 1);
-    run_test("ab|c", "ac", 0);
     
-    run_test("a(b|c)*d", "ad", 1);
-    run_test("a(b|c)*d", "acbd", 1);
-    run_test("a(b|c)*d", "axd", 0);
+    //  run_test("ab|c", "ab", 1);
+    //   run_test("ab|c", "c", 1);
+    // run_test("ab|c", "ac", 0);
+    
+    // run_test("a(b|c)*d", "ad", 1);
+    // run_test("a(b|c)*d", "acbd", 1);
+    // run_test("a(b|c)*d", "axd", 0);
+    //string starting with 'a'
+    run_test("a(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)*","abc",1);
 
+    run_test("a(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)*","bc",1);
+
+    //string ending with 'a'
+    run_test("(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)*a","bc",1);
+    run_test("(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)*a","bca",1);
     return 0;
 }
