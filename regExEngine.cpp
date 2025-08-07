@@ -379,5 +379,20 @@ int main()
     //string ending with 'a'
     run_test("(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)*a","bc",1);
     run_test("(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)*a","bca",1);
+
+    run_test("ab?c", "ac", 1);
+    run_test("ab?c", "abc", 1);
+    run_test("ab?c", "abbc", 0);
+
+    run_test("a?bc", "bc", 1);
+    run_test("a?bc", "abc", 1);
+
+    run_test("ab?", "a", 1);
+    run_test("ab?", "ab", 1);
+    run_test("ab?", "abb", 0);
+
+    run_test("a(bc)?d", "ad", 1);
+    run_test("a(bc)?d", "abcd", 1);
+    run_test("a(bc)?d", "abd", 0);
     return 0;
 }
